@@ -1,5 +1,7 @@
 # Flow
 
+> **This entire app was built using [Zilver Locale](https://discord.gg/VGkyjNBzsC)** (not publicly available yet — join the Discord for early access) **with Claude Opus 4.6 for a total cost of $32.93.**
+
 A lightweight voice-to-text desktop app. Press a hotkey, speak, and your transcribed text is instantly pasted into whatever application you're working in.
 
 Built with Electron, React, and the Groq Whisper API.
@@ -41,10 +43,6 @@ Flow runs as a minimal overlay that stays out of your way. The pill can be confi
 - **Tailwind CSS v4** — styling
 - **Groq API** — speech-to-text via `whisper-large-v3-turbo`
 - **electron-vite** — build tooling
-
-## Built With
-
-This entire app was built using **[Zilver Locale](https://discord.gg/VGkyjNBzsC)** (not publicly available yet — join the Discord for early access) with **Claude Opus 4.6** for a total cost of **$32.93**.
 
 ## Getting Started
 
@@ -112,7 +110,7 @@ The Groq Whisper API has a generous free tier:
 - 25 MB max file size per request
 - No credit card required
 
-For typical voice dictation (5–60 second clips), the free tier is more than enough for daily use.
+For typical voice dictation (5-60 second clips), the free tier is more than enough for daily use.
 
 ## License
 
