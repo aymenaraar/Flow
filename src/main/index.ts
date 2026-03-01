@@ -34,9 +34,22 @@ function getAppIcon(): nativeImage {
 
 function getTrayIcon(): nativeImage {
   try {
-    // Use 16x16 for tray, resize if needed
-    const icon = nativeImage.createFromPath(getIconPath('icon-16.png'))
-    return icon.resize({ width: 16, height: 16 })
+    // Try ICO first (contains all sizes, Windows picks the right one)
+    const icoIcon = nativeImage.createFromPath(getIconPath('icon.ico'))
+    if (!icoIcon.isEmpty()) {
+      return icoIcon.resize({ width: 16, height: 16 })
+    }
+    // Fallback to 32x32 PNG resized down (sharper than 16x16)
+    const png32 = nativeImage.createFromPath(getIconPath('icon-32.png'))
+    if (!png32.isEmpty()) {
+      return png32.resize({ width: 16, height: 16 })
+    }
+    // Last fallback: 256px icon resized
+    const pngFull = nativeImage.createFromPath(getIconPath('icon.png'))
+    if (!pngFull.isEmpty()) {
+      return pngFull.resize({ width: 16, height: 16 })
+    }
+    return nativeImage.createEmpty()
   } catch {
     return nativeImage.createEmpty()
   }
