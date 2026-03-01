@@ -6,6 +6,13 @@ Built with Electron, React, and the Groq Whisper API.
 
 ![Flow](resources/icon.png)
 
+## Download
+
+| Platform | Link |
+|----------|------|
+| Windows | [Flow Setup 1.0.0.exe](https://cdn.zilver.com/Flow%20Setup%201.0.0.exe) |
+| macOS (Apple Silicon) | [Flow-1.0.0-arm64.dmg](https://cdn.zilver.com/Flow-1.0.0-arm64.dmg) |
+
 ## How It Works
 
 1. Press the hotkey (default: `Ctrl+Space`)
@@ -34,6 +41,10 @@ Flow runs as a minimal overlay that stays out of your way. The pill can be confi
 - **Tailwind CSS v4** — styling
 - **Groq API** — speech-to-text via `whisper-large-v3-turbo`
 - **electron-vite** — build tooling
+
+## Built With
+
+This entire app was built using **[Zilver Locale](https://discord.gg/VGkyjNBzsC)** (not publicly available yet — join the Discord for early access) with **Claude Opus 4.6** for a total cost of **$32.93**.
 
 ## Getting Started
 
