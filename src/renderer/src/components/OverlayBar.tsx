@@ -143,6 +143,9 @@ export function OverlayBar(): JSX.Element {
   }, [isRecording, stopRecording])
 
   const handleCancelRecording = useCallback(() => {
+    // Only cancel if actually recording or processing
+    if (!isRecording && state !== 'processing' && state !== 'error') return
+
     // Cancel during recording: stop mic without transcribing
     if (isRecording) {
       window.api.sendRecordingState(false)
@@ -162,7 +165,7 @@ export function OverlayBar(): JSX.Element {
     setState('idle')
     setErrorMessage('')
     window.api.resizeOverlay(180, 44)
-  }, [isRecording, stopRecording, clearPendingTimeout])
+  }, [isRecording, state, stopRecording, clearPendingTimeout])
 
   // Listen for global hotkeys (separate start and stop)
   useEffect(() => {
