@@ -7,7 +7,8 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "start": "electron-vite preview",
-    "dist": "electron-vite build && electron-builder --win nsis"
+    "dist": "electron-vite build && electron-builder --win nsis",
+    "dist:mac": "electron-vite build && electron-builder --mac dmg"
   },
   "build": {
     "appId": "com.flow.app",
@@ -27,6 +28,16 @@
         "filter": ["icon.*", "icon-*.png", "tray-icon.png"]
       }
     ],
+    "mac": {
+      "target": "dmg",
+      "icon": "resources/icon.icns",
+      "identity": "Araar Aymen (HBFB4288YZ)",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist",
+      "notarize": true
+    },
     "win": {
       "target": "nsis",
       "icon": "resources/icon.ico"

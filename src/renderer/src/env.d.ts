@@ -6,6 +6,7 @@ interface AppSettings {
   stopHotkey: string
   language: string
   hidePillWhenIdle: boolean
+  soundEffects: boolean
 }
 
 interface ElectronAPI {
@@ -23,6 +24,8 @@ interface ElectronAPI {
   openSettings: () => void
   closeSettings: () => void
   minimizeSettings: () => void
+  pauseHotkeys: () => void
+  resumeHotkeys: () => void
 }
 
 interface Window {

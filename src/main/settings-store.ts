@@ -1,6 +1,7 @@
 import { app } from 'electron'
 import * as fs from 'fs'
 import * as path from 'path'
+import * as os from 'os'
 
 export interface AppSettings {
   groqApiKey: string
@@ -11,10 +12,12 @@ export interface AppSettings {
   soundEffects: boolean
 }
 
+const isMac = os.platform() === 'darwin'
+
 const DEFAULT_SETTINGS: AppSettings = {
   groqApiKey: '',
-  startHotkey: 'Ctrl+Space',
-  stopHotkey: 'Ctrl+Space',
+  startHotkey: isMac ? 'Option+Space' : 'Ctrl+Space',
+  stopHotkey: isMac ? 'Option+Space' : 'Ctrl+Space',
   language: 'en',
   hidePillWhenIdle: false,
   soundEffects: true

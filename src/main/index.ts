@@ -4,7 +4,7 @@ import { is } from '@electron-toolkit/utils'
 import dotenv from 'dotenv'
 import { transcribeAudio, resetClient } from './groq-service'
 import { pasteText } from './paste-service'
-import { registerHotkeys, registerCancelHotkey, unregisterAll, setRecordingState } from './hotkey-manager'
+import { registerHotkeys, registerCancelHotkey, unregisterAll, setRecordingState, pauseHotkeys, resumeHotkeys } from './hotkey-manager'
 import { getSettings, updateSettings } from './settings-store'
 import { readFileSync, writeFileSync, existsSync } from 'fs'
 
@@ -14,6 +14,7 @@ dotenv.config()
 let overlayWindow: BrowserWindow | null = null
 let settingsWindow: BrowserWindow | null = null
 let tray: Tray | null = null
+let isQuitting = false
 
 function getIconPath(filename: string): string {
   // In dev: resources/ is at project root
@@ -71,7 +72,7 @@ function buildTrayMenu(): void {
           if (updated.hidePillWhenIdle) {
             overlayWindow.hide()
           } else {
-            overlayWindow.show()
+            overlayWindow.showInactive()
           }
         }
         buildTrayMenu()
@@ -130,6 +131,8 @@ function createOverlayWindow(): BrowserWindow {
   const initialX = savedPos ? savedPos.x : Math.round((screenWidth - windowWidth) / 2)
   const initialY = savedPos ? savedPos.y : screenHeight - windowHeight - 40
 
+  const isMac = process.platform === 'darwin'
+
   const win = new BrowserWindow({
     width: windowWidth,
     height: windowHeight,
@@ -137,15 +140,19 @@ function createOverlayWindow(): BrowserWindow {
     y: initialY,
     icon: getAppIcon(),
     show: false,
-    transparent: false,
+    transparent: isMac,
     frame: false,
     alwaysOnTop: true,
     skipTaskbar: true,
     resizable: false,
     hasShadow: true,
     focusable: false,
-    backgroundMaterial: 'acrylic',
+    ...(isMac
+      ? { vibrancy: 'under-window' as const, visualEffectState: 'active' as const }
+      : { backgroundMaterial: 'acrylic' as const }),
     roundedCorners: true,
+    titleBarStyle: 'customButtonsOnHover',
+    trafficLightPosition: { x: -20, y: -20 },
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -154,16 +161,26 @@ function createOverlayWindow(): BrowserWindow {
     }
   })
 
+  // Hide traffic lights completely on macOS overlay — must re-hide on every show
+  if (isMac) {
+    win.setWindowButtonVisibility(false)
+    win.on('show', () => {
+      win.setWindowButtonVisibility(false)
+    })
+  }
+
   // Save position when the window is moved (via -webkit-app-region: drag)
   win.on('moved', () => {
     const [x, y] = win.getPosition()
     saveOverlayPosition(x, y)
   })
 
-  // Prevent the window from being closed, just hide it
+  // Prevent the window from being closed, just hide it (unless app is quitting)
   win.on('close', (e) => {
-    e.preventDefault()
-    win.hide()
+    if (!isQuitting) {
+      e.preventDefault()
+      win.hide()
+    }
   })
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
@@ -178,6 +195,8 @@ function createOverlayWindow(): BrowserWindow {
 }
 
 function createSettingsWindow(): BrowserWindow {
+  const isMac = process.platform === 'darwin'
+
   const win = new BrowserWindow({
     width: 500,
     height: 640,
@@ -188,10 +207,14 @@ function createSettingsWindow(): BrowserWindow {
     minimizable: true,
     maximizable: false,
     frame: false,
-    transparent: false,
-    backgroundMaterial: 'acrylic',
+    transparent: isMac,
+    ...(isMac
+      ? { vibrancy: 'under-window' as const, visualEffectState: 'active' as const }
+      : { backgroundMaterial: 'acrylic' as const }),
     hasShadow: true,
     roundedCorners: true,
+    titleBarStyle: 'customButtonsOnHover',
+    trafficLightPosition: { x: -20, y: -20 },
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -200,11 +223,21 @@ function createSettingsWindow(): BrowserWindow {
     }
   })
 
+  // Hide traffic lights completely on macOS settings — must re-hide on every show
+  if (isMac) {
+    win.setWindowButtonVisibility(false)
+    win.on('show', () => {
+      win.setWindowButtonVisibility(false)
+    })
+  }
+
   win.setMenuBarVisibility(false)
 
   win.on('close', (e) => {
-    e.preventDefault()
-    win.hide()
+    if (!isQuitting) {
+      e.preventDefault()
+      win.hide()
+    }
   })
 
   win.webContents.setWindowOpenHandler((details) => {
@@ -285,7 +318,7 @@ function setupIPC(): void {
       if (updated.hidePillWhenIdle) {
         overlayWindow.hide()
       } else {
-        overlayWindow.show()
+        overlayWindow.showInactive()
       }
     }
     // Rebuild tray menu to reflect new state
@@ -309,7 +342,7 @@ function setupIPC(): void {
   // Overlay show/hide
   ipcMain.on('overlay:show', () => {
     if (overlayWindow) {
-      overlayWindow.show()
+      overlayWindow.showInactive()
     }
   })
 
@@ -322,6 +355,17 @@ function setupIPC(): void {
   ipcMain.on('settings:minimize', () => {
     if (settingsWindow) {
       settingsWindow.minimize()
+    }
+  })
+
+  // Pause/resume hotkeys during hotkey capture in settings
+  ipcMain.on('hotkeys:pause', () => {
+    pauseHotkeys()
+  })
+
+  ipcMain.on('hotkeys:resume', () => {
+    if (overlayWindow) {
+      resumeHotkeys(overlayWindow)
     }
   })
 }
@@ -340,7 +384,7 @@ app.whenReady().then(() => {
   // Show overlay only once content is ready, and only if not set to hidden
   overlayWindow.once('ready-to-show', () => {
     if (!getSettings().hidePillWhenIdle) {
-      overlayWindow?.show()
+      overlayWindow?.showInactive()
     }
   })
 
@@ -358,6 +402,10 @@ app.whenReady().then(() => {
   })
 })
 
+app.on('before-quit', () => {
+  isQuitting = true
+})
+
 app.on('will-quit', () => {
   unregisterAll()
 })
@@ -366,4 +414,15 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+// Handle SIGTERM/SIGINT so the app exits when the dev server is killed
+process.on('SIGTERM', () => {
+  isQuitting = true
+  app.quit()
+})
+
+process.on('SIGINT', () => {
+  isQuitting = true
+  app.quit()
 })

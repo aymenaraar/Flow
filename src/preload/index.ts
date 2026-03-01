@@ -75,6 +75,14 @@ const api = {
 
   minimizeSettings: (): void => {
     ipcRenderer.send('settings:minimize')
+  },
+
+  pauseHotkeys: (): void => {
+    ipcRenderer.send('hotkeys:pause')
+  },
+
+  resumeHotkeys: (): void => {
+    ipcRenderer.send('hotkeys:resume')
   }
 }
 

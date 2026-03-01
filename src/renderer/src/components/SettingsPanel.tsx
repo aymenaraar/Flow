@@ -172,6 +172,15 @@ export function SettingsPanel(): JSX.Element {
     return () => clearTimeout(timeout)
   }, [settings, loading])
 
+  // Pause/resume global hotkeys when entering/exiting hotkey capture mode
+  useEffect(() => {
+    if (recordingTarget) {
+      window.api.pauseHotkeys()
+    } else {
+      window.api.resumeHotkeys()
+    }
+  }, [recordingTarget])
+
   // Hotkey recording listener
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
