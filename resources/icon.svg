@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <!-- Main orb gradient — soft pastel lavender to peach -->
+    <radialGradient id="orb" cx="40%" cy="35%" r="55%">
+      <stop offset="0%" stop-color="#f0e0ff"/>
+      <stop offset="30%" stop-color="#d4b5ff"/>
+      <stop offset="60%" stop-color="#c49dff"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </radialGradient>
+
+    <!-- Inner glow — warm highlight -->
+    <radialGradient id="highlight" cx="35%" cy="30%" r="35%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="#f5e6ff" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#d4b5ff" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Bottom reflection -->
+    <radialGradient id="reflection" cx="55%" cy="70%" r="30%">
+      <stop offset="0%" stop-color="#ffd6e8" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#c49dff" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Outer glow -->
+    <radialGradient id="outerGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="60%" stop-color="#c49dff" stop-opacity="0"/>
+      <stop offset="85%" stop-color="#d4b5ff" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#e8d5ff" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Subtle ring gradient -->
+    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e0c8ff" stop-opacity="0.5"/>
+      <stop offset="50%" stop-color="#ffd6e8" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#c49dff" stop-opacity="0.5"/>
+    </linearGradient>
+
+    <!-- Flow wave gradient -->
+    <linearGradient id="wave" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="20%" stop-color="#ffffff" stop-opacity="0.7"/>
+      <stop offset="50%" stop-color="#f5e6ff" stop-opacity="0.9"/>
+      <stop offset="80%" stop-color="#ffffff" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Shadow filter -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8" result="blur"/>
+      <feOffset dx="0" dy="4" result="offset"/>
+      <feFlood flood-color="#7c3aed" flood-opacity="0.2" result="color"/>
+      <feComposite in="color" in2="offset" operator="in" result="shadow"/>
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="softGlow">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3"/>
+    </filter>
+  </defs>
+
+  <!-- Outer ambient glow -->
+  <circle cx="128" cy="128" r="120" fill="url(#outerGlow)"/>
+
+  <!-- Main orb body -->
+  <circle cx="128" cy="128" r="88" fill="url(#orb)" filter="url(#shadow)"/>
+
+  <!-- Subtle orbital ring -->
+  <ellipse cx="128" cy="128" rx="96" ry="30" fill="none" stroke="url(#ring)" stroke-width="1.5" transform="rotate(-15 128 128)" opacity="0.6"/>
+
+  <!-- Bottom peach/pink reflection -->
+  <circle cx="128" cy="128" r="88" fill="url(#reflection)"/>
+
+  <!-- Top-left specular highlight -->
+  <circle cx="128" cy="128" r="88" fill="url(#highlight)"/>
+
+  <!-- Small bright specular dot -->
+  <ellipse cx="105" cy="100" rx="18" ry="12" fill="white" opacity="0.5" transform="rotate(-20 105 100)"/>
+  <ellipse cx="105" cy="100" rx="10" ry="7" fill="white" opacity="0.7" transform="rotate(-20 105 100)"/>
+
+  <!-- Flow wave across the orb — the voice/audio motif -->
+  <path d="M 60 128 Q 78 112, 96 128 Q 114 144, 128 128 Q 142 112, 160 128 Q 178 144, 196 128"
+        fill="none" stroke="url(#wave)" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+
+  <!-- Second subtle wave -->
+  <path d="M 70 128 Q 85 118, 100 128 Q 115 138, 128 128 Q 141 118, 156 128 Q 171 138, 186 128"
+        fill="none" stroke="url(#wave)" stroke-width="2" stroke-linecap="round" opacity="0.4" filter="url(#softGlow)"/>
+</svg>
