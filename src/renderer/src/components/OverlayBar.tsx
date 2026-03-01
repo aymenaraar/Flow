@@ -146,12 +146,19 @@ export function OverlayBar(): JSX.Element {
     // Only cancel if actually recording or processing
     if (!isRecording && state !== 'processing' && state !== 'error') return
 
+    const isCancellingActiveRecording = isRecording
+
     // Cancel during recording: stop mic without transcribing
-    if (isRecording) {
+    if (isCancellingActiveRecording) {
       window.api.sendRecordingState(false)
       stopRecording(true) // pass cancel flag
     }
-    if (soundEffectsRef.current) playCancelSound()
+
+    // Only play the cancel tone when cancelling an active recording session
+    if (isCancellingActiveRecording && soundEffectsRef.current) {
+      playCancelSound()
+    }
+
     // Cancel during processing: bump generation so result is discarded
     genRef.current++
     // Clear any pending timeouts
