@@ -154,30 +154,51 @@ function unregisterToggleHotkey(): void {
   }
 }
 
+// --- Cancel hotkey (Escape) ---
+// Only registered as a global shortcut while actively recording,
+// so it doesn't block Escape in other applications.
+
+let cancelOverlayWindow: BrowserWindow | null = null
+
 export function registerCancelHotkey(
   overlayWindow: BrowserWindow
 ): boolean {
-  unregisterCancelHotkey()
+  // Store the window reference but don't register the global shortcut yet.
+  cancelOverlayWindow = overlayWindow
+  console.log('Cancel hotkey ready (will activate during recording)')
+  return true
+}
 
+export function activateCancelHotkey(): boolean {
+  deactivateCancelHotkey()
+  if (!cancelOverlayWindow) return false
+
+  const win = cancelOverlayWindow
   const success = globalShortcut.register('Escape', () => {
-    overlayWindow.webContents.send('hotkey:cancel-recording')
+    win.webContents.send('hotkey:cancel-recording')
   })
 
   if (success) {
     registeredCancelHotkey = 'Escape'
-    console.log('Cancel hotkey registered: Escape')
+    console.log('Cancel hotkey activated: Escape')
   } else {
-    console.error('Failed to register cancel hotkey: Escape')
+    console.error('Failed to activate cancel hotkey: Escape')
   }
 
   return success
 }
 
-export function unregisterCancelHotkey(): void {
+export function deactivateCancelHotkey(): void {
   if (registeredCancelHotkey) {
     globalShortcut.unregister(registeredCancelHotkey)
     registeredCancelHotkey = null
+    console.log('Cancel hotkey deactivated')
   }
+}
+
+export function unregisterCancelHotkey(): void {
+  deactivateCancelHotkey()
+  cancelOverlayWindow = null
 }
 
 export function unregisterAll(): void {
@@ -186,20 +207,22 @@ export function unregisterAll(): void {
   registeredStopHotkey = null
   registeredToggleHotkey = null
   registeredCancelHotkey = null
+  cancelOverlayWindow = null
   isToggleMode = false
 }
 
 // Temporarily pause all hotkeys (unregister without clearing state)
-let pausedHotkeys: { start: string | null; stop: string | null; toggle: string | null; cancel: string | null } | null = null
+let pausedHotkeys: { start: string | null; stop: string | null; toggle: string | null; cancel: boolean } | null = null
 
 export function pauseHotkeys(): void {
   pausedHotkeys = {
     start: registeredStartHotkey,
     stop: registeredStopHotkey,
     toggle: registeredToggleHotkey,
-    cancel: registeredCancelHotkey
+    cancel: cancelOverlayWindow !== null
   }
   globalShortcut.unregisterAll()
+  registeredCancelHotkey = null
   console.log('Hotkeys paused for hotkey capture')
 }
 
@@ -217,5 +240,6 @@ export function resumeHotkeys(overlayWindow: BrowserWindow): void {
     if (stop) registerStopHotkey(overlayWindow, stop)
   }
   if (cancel) registerCancelHotkey(overlayWindow)
+  // Note: don't activate cancel hotkey here — it only activates during recording
   console.log('Hotkeys resumed after hotkey capture')
 }

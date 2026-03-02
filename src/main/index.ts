@@ -4,7 +4,7 @@ import { is } from '@electron-toolkit/utils'
 import dotenv from 'dotenv'
 import { transcribeAudio, resetClient } from './groq-service'
 import { pasteText } from './paste-service'
-import { registerHotkeys, registerCancelHotkey, unregisterAll, setRecordingState, pauseHotkeys, resumeHotkeys } from './hotkey-manager'
+import { registerHotkeys, registerCancelHotkey, unregisterAll, setRecordingState, activateCancelHotkey, deactivateCancelHotkey, pauseHotkeys, resumeHotkeys } from './hotkey-manager'
 import { getSettings, updateSettings } from './settings-store'
 import { readFileSync, writeFileSync, existsSync } from 'fs'
 
@@ -270,9 +270,14 @@ function setupIPC(): void {
     }
   })
 
-  // Track recording state for toggle hotkey
+  // Track recording state for toggle hotkey + activate/deactivate Escape cancel key
   ipcMain.on('recording:state', (_event, recording: boolean) => {
     setRecordingState(recording)
+    if (recording) {
+      activateCancelHotkey()
+    } else {
+      deactivateCancelHotkey()
+    }
   })
 
   // Transcribe audio
